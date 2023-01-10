@@ -72,11 +72,11 @@ bool hasNonAlphaNum(string txt){
 	return false;
 }
 
-// true if alphanumeric or '-'
+// true if alphanumeric or '-' or '+'
 bool validParamChars(string txt){
 	for (const char i : txt){
 		if (!isalnum(i)){
-			if (i != '-' && i != '.'){
+			if (i != '-' && i != '.' && i != '+'){
 				return false;
 			}
 		}
