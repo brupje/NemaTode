@@ -70,6 +70,7 @@ void GPSService::attachToParser(NMEAParser& _parser){
 	/* used sentences...
 	$GxGGA		- time,position,fix data
 	$GxGSA		- gps receiver operating mode, satellites used in position and DOP values
+	$GxGST		- estimated error in position solution
 	$GxGSV		- number of gps satellites in view, satellite ID, elevation,azimuth, and SNR
 	$GxRMC		- time,date, position,course, and speed data
 	$GxVTG		- course and speed information relative to the ground
@@ -89,6 +90,10 @@ void GPSService::attachToParser(NMEAParser& _parser){
 		sentence.replace(2, 3, "GSA");
 		_parser.setSentenceHandler(sentence, [this](const NMEASentence& nmea){
 			this->read_GxGSA(nmea);
+		});
+		sentence.replace(2, 3, "GST");
+		_parser.setSentenceHandler(sentence, [this](const NMEASentence& nmea){
+			this->read_GxGST(nmea);
 		});
 		sentence.replace(2, 3, "GSV");
 		_parser.setSentenceHandler(sentence, [this](const NMEASentence& nmea){
@@ -290,6 +295,59 @@ void GPSService::read_GxGSA(const NMEASentence& nmea){
 	catch (NMEAParseError& ex)
 	{
 		NMEAParseError pe("GPS Data Bad Format [$GPGSA] :: " + ex.message, nmea);
+		throw pe;
+	}
+}
+
+void GPSService::read_GxGST(const NMEASentence& nmea){
+	/*  -- EXAMPLE --
+	$GNGST,171214.000,3.3,1.5,1.3,25.7,0.1,0.1,0.2*4D
+
+	$GNGST,171215.000,3.3,1.5,1.3,25.3,0.1,0.1,0.2*48
+
+	Where:
+	GST				Estimated error
+	[0] 171214.000	UTC time status of position (hours/minutes/seconds/ decimal seconds)
+	[1] 3.3			RMS value of the standard deviation of the range inputs to the navigation process
+	[2] 1.5			semi-major axis deviation
+	[3] 1.3			semi-minor axis deviation
+	[4] 25.7		semi-major axis orientation (degrees from true north)
+	[5] 0.1			Standard deviation of latitude error (in meters)
+	[6] 0.1			Standard deviation of longitude error (in meters)
+	[7] 0.2			Standard deviation of altitude error (in meters)
+	[8] *39			the checksum data, always begins with *
+	*/
+
+	try
+	{
+		if (!nmea.checksumOK()){
+			throw NMEAParseError("Checksum is invalid!");
+		}
+
+		if (nmea.parameters.size() < 8){
+			throw NMEAParseError("GPS data is missing parameters.");
+		}
+
+		this->fix.timestamp.setTime(parseDouble(nmea.parameters[0]));		// UTC TIME
+		this->fix.rmsDeviation = parseDouble(nmea.parameters[1]);			// ROOT MEAN SQUARE
+		this->fix.semiMajorDeviation = parseDouble(nmea.parameters[2]);		// SEMI-MAJOR AXIS DEVIATION
+		this->fix.semiMinorDeviation = parseDouble(nmea.parameters[3]);		// SEMI-MINOR AXIS DEVIATION
+		this->fix.semiMajorOrient = parseDouble(nmea.parameters[4]);		// SEMI-MAJOR AXIS ORIENTATION
+		this->fix.latitudeDeviation = parseDouble(nmea.parameters[5]);		// LATITUDE DEVIATION
+		this->fix.longitudeDeviation = parseDouble(nmea.parameters[6]); 	// LONGITUDE DEVIATION
+		this->fix.altitudeDeviation = parseDouble(nmea.parameters[7]);		// ALTITUDE DEVIATION
+
+		//calling handlers
+		this->onUpdate();
+	}
+	catch (NumberConversionError& ex)
+	{
+		NMEAParseError pe("GPS Number Bad Format [$GPGST] :: " + ex.message, nmea);
+		throw pe;
+	}
+	catch (NMEAParseError& ex)
+	{
+		NMEAParseError pe("GPS Data Bad Format [$GPGST] :: " + ex.message, nmea);
 		throw pe;
 	}
 }

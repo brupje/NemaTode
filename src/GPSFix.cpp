@@ -226,6 +226,9 @@ GPSFix::GPSFix() {
 	dilution = 0;		
 	horizontalDilution = 0;		// Horizontal - Best is 1, >20 is terrible, so 0 means uninitialized
 	verticalDilution = 0;	
+	latitudeDeviation = 0;
+	longitudeDeviation = 0;
+	altitudeDeviation = 0;
 	latitude = 0;	
 	longitude = 0;	
 	speed = 0;
@@ -276,14 +279,22 @@ bool GPSFix::locked(){
 
 // Returns meters
 double GPSFix::horizontalAccuracy(){
-	// horizontal 2drms 95% = 4.0  -- from GPS CHIP datasheets
-	return 4.0 * horizontalDilution;
+	if(longitudeDeviation != 0 && latitudeDeviation != 0) {		// If we have GxGST data
+		return (sqrt(pow(longitudeDeviation, 2) + pow(latitudeDeviation, 2)));
+	} else if (quality == 4) {									// If we have RTK Fix
+		return 0.02 * horizontalDilution;						// 2x RTK accuracy from RTK1010 datasheet for 95% confidence
+	}
+	return 5.0 * horizontalDilution;							// 2x GPS accuracy from RTK1010 datasheet for 95% confidence
 }
 
 // Returns meters
 double GPSFix::verticalAccuracy(){
-	// Vertical 2drms 95% = 6.0  -- from GPS CHIP datasheets
-	return 6.0 * verticalDilution;
+	if(altitudeDeviation != 0) {								// If we have GxGST data
+		return altitudeDeviation;
+	} else if (quality == 4) {									// If we have RTK Fix
+		return 0.02 * verticalDilution;							// 2x RTK accuracy from RTK1010 datasheet for 95% confidence
+	}
+	return 5.0 * verticalDilution;								// 2x GPS accuracy from RTK1010 datasheet for 95% confidence
 }
 
 // Takes a degree travel heading (0-360') and returns the name
@@ -389,6 +400,7 @@ std::string GPSFix::toString(){
 	ss.flags(oldflags);  //reset
 
 	ss << "   DOP (P,H,V):        " << dilution << ",   " << horizontalDilution << ",   " << verticalDilution << endl
+		<< "   Error(lat,lon,alt): " << latitudeDeviation << " m,  " << longitudeDeviation << " m,  " << altitudeDeviation << " m" << endl
 		<< "   Accuracy(H,V):      " << horizontalAccuracy() << " m,   " << verticalAccuracy() << " m" << endl;
 
 	ss << "   Altitude:           " << altitude << " m" << endl

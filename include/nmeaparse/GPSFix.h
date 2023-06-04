@@ -156,6 +156,14 @@ namespace nmea {
 		double horizontalDilution;			// Horizontal dilution of precision, initialized to 100, best =1, worst = >20
 		double verticalDilution;			// Vertical is less accurate
 
+		double rmsDeviation;				// Root mean square value of the standard deviation of the range inputs to the navigation process.
+		double semiMajorDeviation;			// Standard deviation of semi-major axis of error ellipse, in meters 
+		double semiMinorDeviation;			// Standard deviation of semi-minor axis of error ellipse, in meters
+		double semiMajorOrient;				// Orientation of semi-major axis of error ellipse (degrees from true north)
+		double latitudeDeviation;			// Standard deviation of latitude error (m)
+		double longitudeDeviation;			// Standard deviation of longitude error (m)
+		double altitudeDeviation;			// Standard deviation of altitude error (m)
+
 		double altitude;		// meters
 		double latitude;		// degrees N
 		double longitude;		// degrees E
