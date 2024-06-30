@@ -92,13 +92,15 @@ private:
 
 	void parseText	(NMEASentence& nmea, std::string s);		//fills the given NMEA sentence with the results of parsing the string.
 	
-	void onInfo		(NMEASentence& n, std::string s);
-	void onWarning	(NMEASentence& n, std::string s);
-	void onError	(NMEASentence& n, std::string s);
+	
 public:
 
 	NMEAParser();
 	virtual ~NMEAParser();
+
+	void onInfo		(NMEASentence& n, std::string s);
+	void onWarning	(NMEASentence& n, std::string s);
+	void onError	(NMEASentence& n, std::string s);
 
 	bool log;
 

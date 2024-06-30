@@ -277,7 +277,13 @@ void NMEAParser::readSentence(std::string cmd){
 		return;
 	}
 	
-
+	if (log) {
+		std::string debugmesg ="Parameters: ";
+		for (auto param : nmea.parameters) {
+			debugmesg += ", " + param;
+		}
+		onInfo(nmea, debugmesg);
+	}
 	// Call the "any sentence" event handler, even if invalid checksum, for possible logging elsewhere.
 	onInfo(nmea, "Calling generic onSentence().");
 	onSentence(nmea);

@@ -80,6 +80,10 @@ void GPSService::attachToParser(NMEAParser& _parser){
 	_parser.setSentenceHandler("PSRF150", [this](const NMEASentence& nmea){
 		this->read_PSRF150(nmea);
 	});
+
+			
+
+		
 	for (const auto& talker : talkerIds){
 		std::string sentence{talker};
 
@@ -159,6 +163,7 @@ void GPSService::read_GxGGA(const NMEASentence& nmea){
 		if (nmea.parameters.size() < 14){
 			throw NMEAParseError("GPS data is missing parameters.");
 		}
+
 
 
 		// TIMESTAMP
