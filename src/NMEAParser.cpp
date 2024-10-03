@@ -109,7 +109,7 @@ void trim(string& str){
 
 
 NMEAParser::NMEAParser() 
-: log(false)
+: log(true)
 , maxbuffersize(NMEA_PARSER_MAX_BUFFER_SIZE)
 , fillingbuffer(false)
 { }
