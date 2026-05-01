@@ -189,7 +189,11 @@ void GPSService::read_GxGGA(const NMEASentence& nmea){
 		// FIX QUALITY
 		bool lockupdate = false;
 		this->fix.quality = (uint8_t)parseInt(nmea.parameters[5]);
-		if (this->fix.quality == 0){
+		if (this->fix.quality == 4 || this->fix.quality == 5) {
+			this->fix.type = 3; 
+			lockupdate = this->fix.setlock(true);
+		}
+		else if (this->fix.quality == 0){
 			lockupdate = this->fix.setlock(false);
 		}
 		else if (this->fix.quality == 1){
